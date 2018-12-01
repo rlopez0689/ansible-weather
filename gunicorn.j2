@@ -1,0 +1,13 @@
+[program:gunicorn] 
+directory=/home/ubuntu/weather_project 
+environment=SECRET_KEY="{{ lookup('env', 'SECRET_KEY')}}",DB_ENGINE="{{ lookup('env', 'DB_ENGINE')"}},DB_NAME="{{ lookup('env', 'DB_NAME')}}",DB_USER="{{ lookup('env', 'DB_USER')}}",DB_HOST="{{ lookup('env', 'DB_HOST')"}},DB_PASSWORD="{{ lookup('env', 'DB_PASSWORD')"}},PORT="{{ lookup('env', 'PORT')"}}, ALLOWED_HOSTS="{{ lookup('env', 'ALLOWED_HOSTS')"}}, WEATHER_API_KEY="{{ lookup('env', 'WEATHER_API_KEY')"}}, WEATHER_API="{{ lookup('env', 'WEATHER_API')"}}
+command=/home/ubuntu/weatherenv/bin/gunicorn --workers 3 --bind 0.0.0.0:80  weather_project.wsgi:application 
+autostart=true 
+autorestart=true 
+stderr_logfile=/var/log/gunicorn/gunicorn.out.log 
+stdout_logfile=/var/log/gunicorn/gunicorn.err.log 
+user=root 
+group=www-data 
+
+[group:guni] 
+programs:gunicorn

@@ -1,0 +1,76 @@
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+
+- name: Install list of packages
+  apt: name={{item}} state=present
+  with_items:
+       - python3-pip
+       - python-setuptools  
+       - build-essential
+       - libpq-dev
+       - python3-dev
+       - postgresql
+       - postgresql-contrib
+       - git
+       - memcached
+
+- pip:
+    name: pip
+    executable: pip3
+    state: latest
+
+- pip:
+   name: virtualenv
+   executable: pip3
+   state: latest
+
+- name: Manually create the initial virtualenv
+  command: virtualenv /home/ubuntu/weatherenv -p python3
+
+- git:
+    repo: https://github.com/rlopez0689/weather_project.git 
+    dest: /home/ubuntu/weather_project
+
+- name: Install pip project requirements
+  pip: 
+    requirements: /home/ubuntu/weather_project/requirements.txt
+    virtualenv: /home/ubuntu/weatherenv
+
+- name: Install gunicorn
+  pip: 
+    name: gunicorn
+    virtualenv: /home/ubuntu/weatherenv
+
+- name: Install psycopg2
+  pip: 
+    name: psycopg2
+    virtualenv: /home/ubuntu/weatherenv
+
+- name: Install supervisord
+  apt:
+    name: supervisor
+    state: present
+ 
+- django_manage:
+    command: migrate
+    app_path: /home/ubuntu/weather_project
+    virtualenv: /home/ubuntu/weatherenv
+
+- name: Ansible Template Example
+  template:
+    src: gunicorn.j2
+    dest: /etc/supervisor/conf.d/gunicorn.conf 
+
+- name: Creates gunicron log directory
+  file: path=/var/log/gunicorn state=directory
+
+- name: Creates gunicorn log file
+  file: path=/var/log/gunicorn/gunicorn.err.log state=touch 
+
+- name: run supervisord
+  command: supervisorctl reread
+
+- name: update supervisor
+  command: supervisorctl update

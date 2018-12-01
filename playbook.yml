@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: False
+  pre_tasks:
+    - name: 'install aptitude'
+      raw: sudo apt-get -y install aptitude
+    - name: 'install python2'
+      raw: sudo apt-get -y install python-simplejson
+  tasks:
+    - import_tasks: weather_django.yml  
+

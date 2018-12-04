@@ -1,0 +1,12 @@
+server {
+   listen 80; 
+   server_name {{ lookup('env', 'ALLOWED_HOSTS') }}; 
+   location = /favicon.ico { access_log off; log_not_found off; } 
+   location /static/ { 
+        root /home/ubuntu/weather_project; 
+   } 
+   location / { 
+        include proxy_params; 
+        proxy_pass http://unix:/home/ubuntu/weather_project/weather_project/weather_project.sock; 
+   } 
+}

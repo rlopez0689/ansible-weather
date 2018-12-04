@@ -14,7 +14,7 @@
        - postgresql
        - postgresql-contrib
        - git
-       - memcached
+       - nginx
 
 - pip:
     name: pip
@@ -58,7 +58,12 @@
     app_path: /home/ubuntu/weather_project
     virtualenv: /home/ubuntu/weatherenv
 
-- name: Ansible Template Example
+- django_manage:
+    command: collectstatic
+    app_path: /home/ubuntu/weather_project
+    virtualenv: /home/ubuntu/weatherenv
+
+- name: Generate supervisor gunicorn file from template
   template:
     src: gunicorn.j2
     dest: /etc/supervisor/conf.d/gunicorn.conf 
@@ -69,8 +74,23 @@
 - name: Creates gunicorn log file
   file: path=/var/log/gunicorn/gunicorn.err.log state=touch 
 
-- name: run supervisord
+- name: reread supervisor
   command: supervisorctl reread
 
 - name: update supervisor
   command: supervisorctl update
+
+- name: Generate nginx weather conf from template
+  template:
+    src: nginx.j2
+    dest: /etc/nginx/sites-available/weather_project 
+
+- name: create ln
+  command: ln -s /etc/nginx/sites-available/weather_project /etc/nginx/sites-enabled
+
+- name: check nginx
+  command: nginx -t
+
+- name: restart nginx
+  command: systemctl restart nginx
+
